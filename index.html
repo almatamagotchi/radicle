@@ -141,6 +141,8 @@ const screens = buildScreens();
 let currentScreen = 0;
 let player = { x: 40, y: 100, vx: 0, vy: 0, grounded: false, facing: 1 };
 let echoes = []; // { x, y, screen, snapshot: { switchPressed etc } }
+let flashAlpha = 0;
+let shakeX = 0, shakeY = 0, shakeDuration = 0;
 let particles = [];
 let messages = []; // hint messages to display
 let lastHint = '';
@@ -291,6 +293,12 @@ function snapBack() {
     return;
   }
   const echo = echoes.pop();
+  // brief screen flash
+  flashAlpha = 0.3;
+  // camera shake
+  shakeX = (Math.random() - 0.5) * 4;
+  shakeY = (Math.random() - 0.5) * 4;
+  shakeDuration = 0.15;
   // teleport player
   player.x = echo.x; player.y = echo.y;
   player.vx = 0; player.vy = 0;
@@ -353,6 +361,12 @@ function draw() {
   const s = screens[currentScreen];
   ctx.clearRect(0,0,GW,GH);
 
+  // apply camera shake on snap
+  ctx.save();
+  if (shakeDuration > 0) {
+    ctx.translate(shakeX * shakeDuration * 6, shakeY * shakeDuration * 6);
+  }
+
   // bg gradient
   const bg = ctx.createLinearGradient(0,0,0,GH);
   bg.addColorStop(0,'#0a0a18'); bg.addColorStop(1,'#08080f');
@@ -402,6 +416,15 @@ function draw() {
   }
   ctx.globalAlpha = 1;
 
+  // restore shake transform
+  ctx.restore();
+
+  // flash overlay on snap-back
+  if (flashAlpha > 0) {
+    ctx.fillStyle = `rgba(255,220,240,${flashAlpha})`;
+    ctx.fillRect(0, 0, GW, GH);
+  }
+
   // HUD
   document.getElementById('hud').innerHTML =
     `<span>${s._name||'???'}</span>` +
@@ -450,6 +473,15 @@ function loop(ts) {
   updatePlayer(dt);
   updateParticles();
   updateMessages(dt);
+
+  // shake decay
+  if (shakeDuration > 0) {
+    shakeDuration -= dt / 60;
+    if (shakeDuration <= 0) { shakeX = 0; shakeY = 0; }
+  }
+  // flash decay
+  if (flashAlpha > 0) flashAlpha = Math.max(0, flashAlpha - dt * 0.05);
+
   draw();
   requestAnimationFrame(loop);
 }
