@@ -133,6 +133,34 @@ function buildScreens() {
   s._edgeLeft = 2;
   screens[3] = s;
 
+  // Screen 5: underground cave — darkness lantern mechanic
+  s = newScreen();
+  setTile(s, 5, 5, PLATFORM); setTile(s, 6, 5, PLATFORM); setTile(s, 7, 5, PLATFORM);
+  setTile(s, 14, 5, PLATFORM); setTile(s, 15, 5, PLATFORM); setTile(s, 16, 5, PLATFORM);
+  setTile(s, 8, 8, PLATFORM); setTile(s, 9, 8, PLATFORM);
+  setTile(s, 15, 8, PLATFORM); setTile(s, 16, 8, PLATFORM); setTile(s, 17, 8, PLATFORM);
+  setTile(s, 0, 12, PLATFORM); setTile(s, 1, 12, PLATFORM); setTile(s, 2, 12, PLATFORM);
+  setTile(s, 18, 12, PLATFORM); setTile(s, 19, 12, PLATFORM);
+  setTile(s, 7, 14, PLATFORM); setTile(s, 8, 14, PLATFORM); setTile(s, 9, 14, PLATFORM);
+  setTile(s, 10, 14, PLATFORM); setTile(s, 11, 14, PLATFORM); setTile(s, 12, 14, PLATFORM);
+  setTile(s, 8, 18, PLATFORM); setTile(s, 9, 18, PLATFORM);
+  setTile(s, 14, 18, PLATFORM); setTile(s, 15, 18, PLATFORM); setTile(s, 16, 18, PLATFORM);
+  // goal at bottom center
+  setTile(s, 10, 17, GOAL);
+  // walls along bottom floor
+  for (let x = 0; x < 20; x++) setTile(s, x, 22, WALL);
+  s._switchPressed = false;
+  s._switchX = 2; s._switchY = 11;
+  s._doorX = -1; s._doorY = -1;
+  s._name = 'underground cave';
+  s._hint = 'darkness closes in · echoes cast light · reach the exit';
+  s._darkness = true;  // triggers darkness rendering
+  s._edgeLeft = 3;
+  screens[4] = s;
+
+  // connect screen 3 → 4
+  screens[3]._edgeRight = 4;
+
   return screens;
 }
 
@@ -473,6 +501,26 @@ function draw() {
   if (s._hint && s._hint !== lastHint) {
     lastHint = s._hint;
     showMessage(s._hint);
+  }
+
+  // darkness: for cave screens, render a shadow mask with light sources
+  // at player + planted echoes
+  if (s._darkness) {
+    ctx.fillStyle = 'rgba(4,4,10,0.85)';
+    ctx.fillRect(0, 0, GW, GH);
+    // cut light circles (player is a bright lantern)
+    ctx.globalCompositeOperation = 'destination-out';
+    // player light — bright, larger
+    const lg = ctx.createRadialGradient(player.x, player.y, 0, player.x, player.y, 80);
+    lg.addColorStop(0, 'rgba(0,0,0,1)'); lg.addColorStop(0.6, 'rgba(0,0,0,0.5)'); lg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = lg; ctx.fillRect(0, 0, GW, GH);
+    // echo lights — dimmer, smaller
+    for (const echo of echoes) {
+      const eg = ctx.createRadialGradient(echo.x, echo.y, 0, echo.x, echo.y, 50);
+      eg.addColorStop(0, 'rgba(0,0,0,0.6)'); eg.addColorStop(0.5, 'rgba(0,0,0,0.2)'); eg.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = eg; ctx.fillRect(0, 0, GW, GH);
+    }
+    ctx.globalCompositeOperation = 'source-over';
   }
 }
 
