@@ -281,6 +281,7 @@ function plantEcho() {
     x: player.x, y: player.y,
     screen: currentScreen,
     snapshot: snapshot,
+    trail: [],  // stores recent positions for trail effect
     age: 0
   });
   spawnParticles(player.x, player.y-6, '#79c0ff', 6);
@@ -400,6 +401,22 @@ function draw() {
 
   // echoes
   for (const echo of echoes) {
+    // trail effect: faint dots along the echo's recorded path
+    if (echo.trail && echo.trail.length > 1) {
+      ctx.strokeStyle = 'rgba(160,200,255,0.15)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(echo.trail[0].x, echo.trail[0].y);
+      for (let i = 1; i < echo.trail.length; i++) {
+        ctx.lineTo(echo.trail[i].x, echo.trail[i].y);
+      }
+      ctx.stroke();
+      // dot at each trail point
+      ctx.fillStyle = 'rgba(160,200,255,0.12)';
+      for (const pt of echo.trail) {
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, 2, 0, Math.PI*2); ctx.fill();
+      }
+    }
     ctx.globalAlpha = 0.3;
     drawPlayer(echo.x, echo.y, true);
     ctx.globalAlpha = 1;
@@ -471,6 +488,12 @@ function loop(ts) {
   lastTime = ts;
 
   updatePlayer(dt);
+  // echo trail: record position for the latest echo every 4 frames
+  if (echoes.length > 0 && frameCount % 4 === 0) {
+    const last = echoes[echoes.length - 1];
+    last.trail.push({ x: player.x, y: player.y });
+    if (last.trail.length > 50) last.trail.shift();
+  }
   updateParticles();
   updateMessages(dt);
 
