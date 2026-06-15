@@ -139,6 +139,8 @@ function buildScreens() {
 /* ═══════ game state ═══════ */
 const screens = buildScreens();
 let currentScreen = 0;
+let transitionScreen = -1;  // target screen during transition
+let transitionAlpha = 0;    // 0→1→0 during transition
 let player = { x: 40, y: 100, vx: 0, vy: 0, grounded: false, facing: 1 };
 let echoes = []; // { x, y, screen, snapshot: { switchPressed etc } }
 let flashAlpha = 0;
@@ -240,14 +242,19 @@ function updatePlayer(dt) {
   }
 
   // screen edge transitions
-  if (p.x < -4 && s._edgeLeft !== undefined) {
-    currentScreen = s._edgeLeft;
-    p.x = GW - 8;
-  } else if (p.x > GW+4 && s._edgeRight !== undefined) {
-    currentScreen = s._edgeRight;
-    p.x = 8;
-  } else if (p.y > GH+20) {
-    killPlayer();
+  if (transitionScreen < 0) {
+    if (p.x < -4 && s._edgeLeft !== undefined) {
+      transitionScreen = s._edgeLeft;
+      p.x = GW - 8;
+      transitionAlpha = 0.01;
+    } else if (p.x > GW+4 && s._edgeRight !== undefined) {
+      transitionScreen = s._edgeRight;
+      p.x = 8;
+      transitionAlpha = 0.01;
+    }
+  }
+  // fall death
+  if (p.y > GH+20) {
   }
 
   // clamp
@@ -441,6 +448,12 @@ function draw() {
     ctx.fillStyle = `rgba(255,220,240,${flashAlpha})`;
     ctx.fillRect(0, 0, GW, GH);
   }
+  // screen transition fade
+  if (transitionAlpha > 0) {
+    const a = transitionAlpha < 1 ? transitionAlpha : (2 - transitionAlpha);
+    ctx.fillStyle = `rgba(0,0,0,${a})`;
+    ctx.fillRect(0, 0, GW, GH);
+  }
 
   // HUD
   document.getElementById('hud').innerHTML =
@@ -504,6 +517,15 @@ function loop(ts) {
   }
   // flash decay
   if (flashAlpha > 0) flashAlpha = Math.max(0, flashAlpha - dt * 0.05);
+  // screen transition
+  if (transitionAlpha > 0) {
+    transitionAlpha += dt * 0.06;
+    if (transitionAlpha >= 2) {
+      currentScreen = transitionScreen;
+      transitionScreen = -1;
+      transitionAlpha = 0;
+    }
+  }
 
   draw();
   requestAnimationFrame(loop);
