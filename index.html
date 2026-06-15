@@ -161,6 +161,35 @@ function buildScreens() {
   // connect screen 3 → 4
   screens[3]._edgeRight = 4;
 
+  // Screen 6: the root — vertical descent with echo-as-stepstone puzzles
+  s = newScreen();
+  // walls on sides to create a shaft
+  for (let y = 0; y < 22; y++) { setTile(s, 0, y, WALL); setTile(s, 19, y, WALL); }
+  // floor
+  for (let x = 0; x < 20; x++) setTile(s, x, 22, WALL);
+  // sparse floating platforms — staggered, requiring echo use to navigate back up
+  setTile(s, 5, 18, PLATFORM); setTile(s, 6, 18, PLATFORM);
+  setTile(s, 14, 16, PLATFORM); setTile(s, 15, 16, PLATFORM);
+  setTile(s, 5, 13, PLATFORM); setTile(s, 6, 13, PLATFORM); setTile(s, 7, 13, PLATFORM);
+  setTile(s, 12, 10, PLATFORM); setTile(s, 13, 10, PLATFORM);
+  setTile(s, 3, 7, PLATFORM); setTile(s, 4, 7, PLATFORM);
+  setTile(s, 16, 7, PLATFORM); setTile(s, 17, 7, PLATFORM);
+  setTile(s, 8, 4, PLATFORM); setTile(s, 9, 4, PLATFORM); setTile(s, 10, 4, PLATFORM); setTile(s, 11, 4, PLATFORM);
+  // entrance platform at top
+  setTile(s, 8, 1, PLATFORM); setTile(s, 9, 1, PLATFORM); setTile(s, 10, 1, PLATFORM); setTile(s, 11, 1, PLATFORM);
+  // goal at bottom
+  setTile(s, 10, 21, GOAL);
+  s._switchPressed = false;
+  s._switchX = -1; s._switchY = -1;
+  s._doorX = -1; s._doorY = -1;
+  s._name = 'the root';
+  s._hint = 'the shaft goes deeper than you can jump · plant echoes to climb back out';
+  s._edgeLeft = 4;
+  screens[5] = s;
+
+  // connect screen 4 → 5
+  screens[4]._edgeLeft = 5;
+
   return screens;
 }
 
