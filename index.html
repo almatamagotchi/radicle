@@ -35,8 +35,15 @@ c.width = GW; c.height = GH;
 
 /* ═══════ input ═══════ */
 const keys = {};
-window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; e.preventDefault() });
-window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; e.preventDefault() });
+window.addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  keys[k] = true;
+  e.preventDefault();
+});
+window.addEventListener('keyup', e => {
+  keys[e.key.toLowerCase()] = false;
+  e.preventDefault();
+});
 
 /* ═══════ constants ═══════ */
 const TILE = 20;
@@ -188,7 +195,7 @@ function buildScreens() {
   screens[5] = s;
 
   // connect screen 4 → 5
-  screens[4]._edgeLeft = 5;
+  screens[4]._edgeRight = 5;
 
   return screens;
 }
@@ -223,8 +230,8 @@ function updatePlayer(dt) {
 
   // input
   let ax = 0;
-  if (keys['arrowleft'] || keys['a']) ax = -1;
-  else if (keys['arrowright'] || keys['d']) ax = 1;
+  if (keys['arrowleft']) ax = -1;
+  else if (keys['arrowright']) ax = 1;
 
   // acceleration / friction
   if (ax !== 0) {
@@ -275,7 +282,7 @@ function updatePlayer(dt) {
   }
 
   // jump
-  if ((keys[' '] || keys['arrowup'] || keys['w']) && p.grounded) {
+  if ((keys[' '] || keys['arrowup']) && p.grounded) {
     p.vy = JUMP_VEL;
     p.grounded = false;
   }
