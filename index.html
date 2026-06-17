@@ -312,6 +312,7 @@ function updatePlayer(dt) {
   }
   // fall death
   if (p.y > GH+20) {
+    killPlayer();
   }
 
   // clamp
@@ -358,6 +359,9 @@ function snapBack() {
     return;
   }
   const echo = echoes.pop();
+  // cancel any in-progress transition
+  transitionScreen = -1;
+  transitionAlpha = 0;
   // brief screen flash
   flashAlpha = 0.3;
   // camera shake
@@ -574,7 +578,9 @@ function drawPlayer(x, y, ghost) {
 
 /* ═══════ game loop ═══════ */
 let lastTime = 0;
+let frameCount = 0;
 function loop(ts) {
+  frameCount++;
   const dt = Math.min((ts - lastTime)/16.667, 3); // cap at 3x slowdown
   lastTime = ts;
 
