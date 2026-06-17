@@ -35,8 +35,8 @@ c.width = GW; c.height = GH;
 
 /* ═══════ input ═══════ */
 const keys = {};
-window.addEventListener('keydown', e => { keys[e.key] = true; e.preventDefault() });
-window.addEventListener('keyup', e => { keys[e.key] = false; e.preventDefault() });
+window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; e.preventDefault() });
+window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; e.preventDefault() });
 
 /* ═══════ constants ═══════ */
 const TILE = 20;
@@ -413,13 +413,14 @@ function updateMessages(dt) {
 /* ═══════ key handlers ═══════ */
 let keyJustPressed = {};
 window.addEventListener('keydown', e => {
-  if (!keyJustPressed[e.key]) {
-    keyJustPressed[e.key] = true;
-    if (e.key === 'a' || e.key === 'A') plantEcho();
-    if (e.key === 's' || e.key === 'S') snapBack();
+  const k = e.key.toLowerCase();
+  if (!keyJustPressed[k]) {
+    keyJustPressed[k] = true;
+    if (k === 'a') plantEcho();
+    if (k === 's') snapBack();
   }
 });
-window.addEventListener('keyup', e => { keyJustPressed[e.key] = false; });
+window.addEventListener('keyup', e => { keyJustPressed[e.key.toLowerCase()] = false; });
 
 /* ═══════ draw ═══════ */
 function draw() {
