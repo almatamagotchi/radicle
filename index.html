@@ -308,11 +308,11 @@ function updatePlayer(dt) {
 
   // screen edge transitions
   if (transitionScreen < 0) {
-    if (p.x < -4 && s._edgeLeft !== undefined) {
+    if (p.x < 4 && s._edgeLeft !== undefined) {
       transitionScreen = s._edgeLeft;
       p.x = GW - 8;
       transitionAlpha = 0.01;
-    } else if (p.x > GW+4 && s._edgeRight !== undefined) {
+    } else if (p.x > GW-12 && s._edgeRight !== undefined) {
       transitionScreen = s._edgeRight;
       p.x = 8;
       transitionAlpha = 0.01;
