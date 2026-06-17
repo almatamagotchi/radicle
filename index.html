@@ -134,7 +134,7 @@ function buildScreens() {
   screens[3] = s;
 
   // Screen 5: underground cave — darkness lantern mechanic
-  s = newScreen();
+   s = emptyScreen();
   setTile(s, 5, 5, PLATFORM); setTile(s, 6, 5, PLATFORM); setTile(s, 7, 5, PLATFORM);
   setTile(s, 14, 5, PLATFORM); setTile(s, 15, 5, PLATFORM); setTile(s, 16, 5, PLATFORM);
   setTile(s, 8, 8, PLATFORM); setTile(s, 9, 8, PLATFORM);
@@ -162,7 +162,7 @@ function buildScreens() {
   screens[3]._edgeRight = 4;
 
   // Screen 6: the root — vertical descent with echo-as-stepstone puzzles
-  s = newScreen();
+   s = emptyScreen();
   // walls on sides to create a shaft
   for (let y = 0; y < 22; y++) { setTile(s, 0, y, WALL); setTile(s, 19, y, WALL); }
   // floor
