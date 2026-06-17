@@ -240,9 +240,10 @@ function updatePlayer(dt) {
 
   // move
   p.x += p.vx;
-  // horizontal collision
+  // horizontal collision (exclude feet from range so ground doesn't block walking)
   const left = Math.floor((p.x-6)/TILE), right = Math.floor((p.x+6)/TILE);
-  const top = Math.floor((p.y-10)/TILE), bottom = Math.floor((p.y+8)/TILE);
+  const top = Math.floor((p.y-10)/TILE), bottom = Math.floor((p.y-2)/TILE);
+  if (bottom < top) bottom = top; // sanity: at least check one row
   const midR = Math.floor(p.y/TILE);
 
   // check horizontal collision
