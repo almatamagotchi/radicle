@@ -56,7 +56,7 @@ const JUMP_VEL = -7.8;
 const MAX_ECHOES = 3;
 
 /* ═══════ tiles ═══════ */
-const EMPTY = 0, WALL = 1, PLATFORM = 2, SWITCH = 3, DOOR = 4, SPIKE = 5, GOAL = 6;
+const EMPTY = 0, WALL = 1, PLATFORM = 2, SWITCH = 3, DOOR = 4, SPIKE = 5, GOAL = 6, FRAGMENT = 7;
 
 const tileColors = {
   [EMPTY]: null,
@@ -66,6 +66,7 @@ const tileColors = {
   [DOOR]: '#7ee787',
   [SPIKE]: '#f05050',
   [GOAL]: '#f0a0d0',
+  [FRAGMENT]: '#a0f0d0',
 };
 
 /* ═══════ screens ═══════ */
@@ -118,6 +119,8 @@ function buildScreens() {
   setTile(s, 13, 5, WALL); // barrier
   setTile(s, 10, 5, WALL);
   setTile(s, 5, 17, GOAL);
+  // echo fragment #1: on the high left platform
+  setTile(s, 3, 3, FRAGMENT);
   s._name = 'the climb';
   s._hint = 'use echoes to reach the high platform';
   s._edgeLeft = 1; s._edgeRight = 3;
@@ -138,6 +141,8 @@ function buildScreens() {
   s._name = 'the puzzle';
   s._hint = 'step on switch · plant echo · snap back · reach door';
   s._edgeLeft = 2;
+  // echo fragment #2: past the switch-door puzzle, in the back right corner
+  setTile(s, 12, 18, FRAGMENT);
   screens[3] = s;
 
   // Screen 5: underground cave — darkness lantern mechanic
@@ -192,6 +197,8 @@ function buildScreens() {
   s._name = 'the root';
   s._hint = 'the shaft goes deeper than you can jump · plant echoes to climb back out';
   s._edgeLeft = 4;
+  // echo fragment #3: on a tricky mid-height platform in the shaft
+  setTile(s, 13, 11, FRAGMENT);
   screens[5] = s;
 
   // connect screen 4 → 5
@@ -207,6 +214,7 @@ let transitionScreen = -1;  // target screen during transition
 let transitionAlpha = 0;    // 0→1→0 during transition
 let player = { x: 40, y: 100, vx: 0, vy: 0, grounded: false, facing: 1 };
 let echoes = []; // { x, y, screen, snapshot: { switchPressed etc } }
+let fragmentsCollected = 0; // 3 needed to win
 let flashAlpha = 0;
 let shakeX = 0, shakeY = 0, shakeDuration = 0;
 let particles = [];
@@ -292,6 +300,20 @@ function updatePlayer(dt) {
   const atBody = Math.floor(p.x/TILE);
   if (tileAt(s, atFeet, atBody) === SPIKE || tileAt(s, newBottom, newRight) === SPIKE || tileAt(s, newBottom, newLeft) === SPIKE) {
     killPlayer();
+  }
+
+  // fragment collection
+  const atBodyC = Math.floor(p.x / TILE);
+  const atHeadR = Math.floor((p.y - 10) / TILE);
+  for (let r = atHeadR; r <= atFeet; r++) {
+    for (let c = atBodyC; c <= Math.floor((p.x + 10) / TILE); c++) {
+      if (tileAt(s, r, c) === FRAGMENT) {
+        setTile(s, r, c, EMPTY);
+        fragmentsCollected++;
+        spawnParticles(c * TILE + 10, r * TILE + 10, '#a0f0d0', 10);
+        showMessage(`fragment ${fragmentsCollected}/3 collected${fragmentsCollected >= 3 ? ' — you are whole again' : ''}`);
+      }
+    }
   }
 
   // switch check
@@ -473,6 +495,12 @@ function draw() {
         ctx.fillStyle = `rgba(240,160,208,${pulse})`;
         ctx.fillRect(c*TILE-2, r*TILE-2, TILE+3, TILE+3);
       }
+      // highlight fragment
+      if (t === FRAGMENT) {
+        const pulse = 0.5 + Math.sin(Date.now()*0.004 + c + r)*0.3;
+        ctx.fillStyle = `rgba(160,240,208,${pulse})`;
+        ctx.fillRect(c*TILE-1, r*TILE-1, TILE+1, TILE+1);
+      }
     }
   }
 
@@ -526,9 +554,19 @@ function draw() {
   }
 
   // HUD
+  const fragHTML = fragmentsCollected >= 3
+    ? '<span style="color:#a0f0d0">✦ fragments: complete</span>'
+    : `<span>✦ fragments: ${fragmentsCollected}/3</span>`;
   document.getElementById('hud').innerHTML =
     `<span>${s._name||'???'}</span>` +
-    `<span>echoes ${echoes.length}/${MAX_ECHOES}</span>`;
+    `<span>echoes ${echoes.length}/${MAX_ECHOES}</span>` +
+    fragHTML;
+
+  // victory state
+  if (fragmentsCollected >= 3 && !window._victoryShown) {
+    window._victoryShown = true;
+    showMessage('you collected all 3 echo fragments — you are whole again');
+  }
 
   // messages
   if (messages.length > 0) {
